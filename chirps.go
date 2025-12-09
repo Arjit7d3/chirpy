@@ -82,6 +82,28 @@ func (cfg *apiConfig) handleChirpsReadAll(w http.ResponseWriter, r *http.Request
 	respondWithJSON(w, http.StatusOK, json_chirps)
 }
 
+func (cfg *apiConfig) handleChirpsRead(w http.ResponseWriter, r *http.Request) {
+	chirpID, err := uuid.Parse(r.PathValue("chirpID"))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't convert chirpID(string) to uuid", err)
+		return
+	}
+
+	chirp, err := cfg.db.GetChirp(r.Context(), chirpID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Couldn't get chirp with the given ID", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, Chirp{
+		Id:         chirp.ID,
+		Created_at: chirp.CreatedAt,
+		Updated_at: chirp.UpdatedAt,
+		Body:       chirp.Body,
+		UserID:     chirp.UserID,
+	})
+}
+
 func validateChirp(body string) (string, error) {
 	const maxChirpLength = 140
 	if len(body) > maxChirpLength {
