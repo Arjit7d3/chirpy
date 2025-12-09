@@ -62,15 +62,15 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 }
 
 func (cfg *apiConfig) handleChirpsReadAll(w http.ResponseWriter, r *http.Request) {
-	chirps, err := cfg.db.ListChirps(r.Context())
+	dbChirps, err := cfg.db.ListChirps(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
 		return
 	}
-	json_chirps := make([]Chirp, len(chirps))
+	chirps := make([]Chirp, len(dbChirps))
 
-	for i, chirp := range chirps {
-		json_chirps[i] = Chirp{
+	for i, chirp := range dbChirps {
+		chirps[i] = Chirp{
 			Id:         chirp.ID,
 			Created_at: chirp.CreatedAt,
 			Updated_at: chirp.UpdatedAt,
@@ -79,7 +79,7 @@ func (cfg *apiConfig) handleChirpsReadAll(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	respondWithJSON(w, http.StatusOK, json_chirps)
+	respondWithJSON(w, http.StatusOK, chirps)
 }
 
 func (cfg *apiConfig) handleChirpsRead(w http.ResponseWriter, r *http.Request) {
